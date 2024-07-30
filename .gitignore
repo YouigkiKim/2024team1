@@ -1,0 +1,46 @@
+
+
+# Ignore build and development artifacts
+build/
+devel/
+logs/
+install/
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE/editor specific files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Ignore Python virtual environments
+venv/
+__pycache__/
+
+# Ignore compiled files
+*.o
+*.so
+*.out
+*.a
+*.pyc
+
+# Ignore catkin workspace files
+.catkin_workspace
+.catkin_tools/
+.catkin_tools_prebuild/
+CMakeLists.txt.user
+
+# ROS specific ignores
+*.bag
+*.log
+*.active
+*.pbstream
+*.dot
+.cache
+
+# Ignore generated messages/services
+msg_gen/
+srv_gen/

@@ -1,0 +1,29 @@
+<!--  -->
+<launch>
+  <param name="use_sim_time" value="True"/>
+
+  <arg name="objects_definition_file" default=''/>
+  <!-- use comma separated format "x,y,z,roll,pitch,yaw", 
+    and parameter name spawn_point_<vehicle_name>. You can add
+    as many spawn_point as vehicles defined in objects_definition_file-->
+  <arg name="spawn_point_ego_vehicle" default=""/>
+  <arg name="spawn_sensors_only" default="true"/>
+
+  <node pkg="carla_spawn_objects" type="carla_spawn_objects.py" name="$(anon carla_spawn_objects)" output="screen">
+    <!-- <param name="objects_definition_file" value="$(arg objects_definition_file)" />
+    <param name="spawn_point_ego_vehicle" value="$(arg spawn_point_ego_vehicle)" />
+    <param name="spawn_sensors_only" value="$(arg spawn_sensors_only)" /> -->
+  </node>
+
+    <!-- Include the carla_ros_bridge.launch file -->
+  <!-- <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge.launch">
+  </include> -->
+
+  <include file="$(find carla_spawn_objects)/launch/carla_spawn_objects.launch"></include>
+
+
+  <node name="first_node" pkg="team_project" type="first_node" output="screen">
+  </node>
+
+
+</launch>

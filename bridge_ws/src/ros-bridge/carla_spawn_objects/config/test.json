@@ -1,0 +1,14 @@
+{   
+    "objects": 
+    [
+
+        {
+            "type": "vehicle.tesla.model3",
+            "id": "ego_vehicle",
+            "sensors": 
+            [
+
+            ]
+        }
+    ]
+}
