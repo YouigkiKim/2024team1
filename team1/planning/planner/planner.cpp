@@ -2,13 +2,23 @@
 
 
 namespace Plan{
-
+    Object::Object(double x,double y, std::string flag):x_(x), y_(y),flag_(flag){
+            if(flag == "HUMAN" || flag == "BYCICLE") Flag Flag_ = Flag::HUMAN;
+            else if(flag == "CONTROL_LOSS") Flag Flag_ = Flag::CONTROL_LOSS;
+            else if(flag == "TRAFFIC_SIGN") Flag Flag_ = Flag::TRAFFIC_SIGN;
+            else if(flag == "OPEN_DOOR") Flag Flag_ = Flag::OPEN_DOOR;
+            else if(flag == "CUT_IN") Flag Flag_ = Flag::CUT_IN;
+            else if(flag == "CONSTRUCTION_SITE") Flag Flag_ = Flag::CONSTRUCTION_SITE;
+        };
 
     /*
     class planner
     */
     Planner::Planner(double x, double y, double yaw)
-    : x_(x), y_(y), yaw_(yaw), vel_(5), collision_(3.0, 0.5, 1.0){};
+    : x_(x), y_(y), yaw_(yaw), vel_(5), collision_(3.0, 0.5, 1.0){
+        std::string flag_("EGO");
+        Object::Flag Flag_ = Object::Flag::EGO;
+    };
 
     // objects 객체를 직접 localization하는 코드
     void Planner::placement_object (Objects& objects){
@@ -57,7 +67,7 @@ namespace Plan{
     */
     CollisionChecker::CollisionChecker(const double pt, const double dt, const double r)
         : predict_time_(pt), dt_(dt), circle_radius_(r){
-            circles_pos.push_back(Object(1.0,0));
+            circles_pos.push_back(Object(1.0,0,"HUMAN"));
             // circles_pos.push_back(Object(-1.0,0));
             queue_size = predict_time_/dt_;
         };
@@ -116,8 +126,8 @@ namespace Plan{
                 if(true)object_radius = 1;
                 else object_radius = 2;
 
-                d_x1 = object.x_ - current_step_pos.x_+circles_pos[0].x_;
-                d_y1 = object.y_ - current_step_pos.y_+circles_pos[0].y_;
+                d_x1 = object.x_ - current_step_pos.x_ - circles_pos[0].x_;
+                d_y1 = object.y_ - current_step_pos.y_ - circles_pos[0].y_;
                 range = sqrt(d_x1*d_x1+d_y1*d_y1);
 
 
@@ -139,7 +149,68 @@ namespace Plan{
     behavior plan
     */
     BehaviorPlan::BehaviorPlan()
-        : human_flag_(false),control_loss_flag_(false),traffic_sign_flag_(false)
-        ,{};
+        {all_flag_false();}
 
+    void BehaviorPlan::all_flag_false(){
+        human_flag_ = false;
+        control_loss_flag_ = false;
+        traffic_sign_flag_ = false;
+        traffic_sign_ = false;
+        open_door_flag_ = false;
+        construction_flag_ = false;
+    }
+    void BehaviorPlan::plan_global(){};
+
+    void BehaviorPlan::update_flag(const Objects& Objects){
+        all_flag_false();
+        for(int i=0; i< Objects.object_num_;i++){
+            switch(Objects.objects_[i].Flag_){
+                case Object::Flag::HUMAN:
+                    human_flag_ = true;
+                    break;
+                case Object::Flag::CONTROL_LOSS:
+                    control_loss_flag_ = true;
+                    break;
+                case Object::Flag::CONSTRUCTION_SITE:
+                    construction_flag_ = true;
+                    break;
+                case Object::Flag::TRAFFIC_SIGN:
+                    traffic_sign_ = true;
+                    break;
+                case Object::Flag::OPEN_DOOR:
+                    break;
+                case Object::Flag::CUT_IN:
+                    break;
+            }
+        }
+        if(waypoint_.get_opt() == LEFT_CORNER){
+            corner_left_flag_ = true;
+        }else if(waypoint_.get_opt() == RIGHT_CORNER){
+            corner_right_flag_ = true;
+        }
+    }
+
+    double BehaviorPlan::decide_vel(){
+        if(human_flag_){
+           return velcon_.human();
+        }else if(control_loss_flag_){
+            return velcon_.control_loss();
+        }else if(traffic_sign_){
+            return velcon_.traffic_sign();
+        }else if(corner_left_flag_){
+            return velcon_.corner_left();
+        }else if(corner_right_flag_){
+            return velcon_.corner_right();
+        }else{
+            return velcon_.normal(drive_);
+        }
+    }
+
+    Pos decide_way(){
+
+    }
+    void BehaviorPlan::decide(){
+        ref_vel = decide_vel();
+        ref_way = decide_way();
+    }
 }

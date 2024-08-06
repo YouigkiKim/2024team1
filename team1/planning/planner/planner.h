@@ -7,19 +7,39 @@
 #include <chrono>
 #include <vector>
 #include <queue>
+#include <string>
+#include <decision.h>
+using Decision::VelocityControl ;
+using Decision::WayPoint ;
 
+#define LEFT_CORNER 2
+#define RIGHT_CORNER 3
 
 namespace Plan{
     struct Object{
         double          x_;
         double          y_;
-        Object(double x,double y):x_(x), y_(y){};
+        std::string     flag_;
+        enum class      Flag{
+            EGO,
+            HUMAN,
+            CONTROL_LOSS,
+            TRAFFIC_SIGN,
+            OPEN_DOOR,
+            CUT_IN,
+            CONSTRUCTION_SITE
+        };
+        Flag Flag_;
+        Object(double x,double y, std::string flag);
     };
-    struct Ego{
-        double          x_;
-        double          y_;
-        double          w_;
-        double          vel_;
+    struct Pos{
+        double x_,y_,yaw_;
+        Pos(double x, double y, double yaw)
+        : x_(x), y_(y), yaw_(yaw){};
+    };
+    enum class Drive{
+        HIGH,
+        LOW,
     };
 
     struct Objects{
@@ -30,13 +50,13 @@ namespace Plan{
         //test method
         void create_objects(){
             clear();
-            objects_.push_back(Object(0,15));
-            objects_.push_back(Object(-8,-10));
-            objects_.push_back(Object(-6,20));
-            objects_.push_back(Object(2,30));
-            objects_.push_back(Object(5,-30));
-            objects_.push_back(Object(10,-10));
-            objects_.push_back(Object(-10,30));
+            objects_.push_back(Object(0,15,"HUMAN"));
+            objects_.push_back(Object(-8,-10,"HUMAN"));
+            objects_.push_back(Object(-6,20,"HUMAN"));
+            objects_.push_back(Object(2,30,"HUMAN"));
+            objects_.push_back(Object(5,-30,"HUMAN"));
+            objects_.push_back(Object(10,-10,"HUMAN"));
+            objects_.push_back(Object(-10,30,"HUMAN"));
             object_num_ = 7;
         }
         void clear(){
@@ -51,11 +71,7 @@ namespace Plan{
     class CollisionChecker{
 
         private:
-        struct Pos{
-            double x_;
-            double y_;
-            double yaw_;
-        };
+
         double          w_;
         double          dt_;
         double          vel_;
@@ -76,38 +92,46 @@ namespace Plan{
         void update_current_state(const Object object,const double yaw, const double v, const double w);
 
     };
+
     /*
     Behavior plan
     */
     class BehaviorPlan{
         private:
-        //상황 별 flag
-        enum class VelMode{
-            LOW,
-            HIGH,
-            ACC
-        };
+        //Behavior planning classes
+        Drive                   drive_;
+        WayPoint                waypoint_;
+        VelocityControl         velcon_;
+
+        // objects flags
         bool                    human_flag_;
         bool                    control_loss_flag_;
         bool                    traffic_sign_flag_;
         bool                    traffic_sign_; // Red true, green, yellow false
-        //정속 속도
-        double                  low_constant_speed_;
-        double                  high_constant_speed_;
-        // 감속 비율
-        double                  control_loss_ratio_;
-        double                  human_flag_ratio_;
-        double                  traffic_sign_ratio_;
-        double                  collision_time_ratio_;
-        //급정거 threshold
-        double                  hard_break_time_;
-        //목표속도
-        double                  ref_vel_;
+        bool                    open_door_flag_;
+        bool                    construction_flag_;
+        bool                    corner_left_flag_;
+        bool                    corner_right_flag_;
+
+        //BehaviorPlan private function
+        void                    update_flag(const Objects& Objects);\
+        void                    all_flag_false();
+        double                  decide_vel();
+        Pos                     decide_way();
+        //control value
+        double                  ref_vel;
+        Pos                     ref_way;
+
 
         public:
         BehaviorPlan();
-        
+        void                    plan_global();
+        void                    decide();
+
     };
+
+
+
 
 
     class Planner{
