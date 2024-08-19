@@ -1,0 +1,9 @@
+<launch>
+    <param name="/use_sim_time" value="true"/>
+    
+    <!-- Waypoint Publisher 노드 -->
+    <!-- <node name="waypoint_publisher" pkg="controller_verification" type="waypoint_publisher" output="screen" args="$(find controller_verification)/src/waypoints.csv" /> -->
+    <!-- Stanley 노드 -->
+    <!-- <node name="longitudinal_controller" pkg="controller_verification" type="longitudinal_controller" output="screen"/> -->
+    <node name="stanley_controller_node" pkg="my_stanley_controller" type="stanley_controller_node" output="screen" />
+</launch>

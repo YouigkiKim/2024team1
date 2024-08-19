@@ -1,0 +1,10 @@
+<launch>
+    <param name="/use_sim_time" value="true"/>
+    
+    
+    <!-- Stanley 노드 -->
+    <!-- <node name="stanley_controller_node" pkg="my_stanley_controller" type="stanley_controller_node" output="screen" /> -->
+    <node name="Controller_node" pkg="my_stanley_controller" type="Controller_node" output="screen" />
+    
+
+</launch>

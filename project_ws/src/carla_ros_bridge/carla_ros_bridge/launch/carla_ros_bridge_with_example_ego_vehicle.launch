@@ -1,24 +1,29 @@
 <!-- -->
 <launch>
+
   <!-- CARLA connection -->
   <arg name='host' default='localhost'/>
   <arg name='port' default='2000'/>
-  <arg name='timeout' default='10'/>
+  <arg name='timeout' default='100'/>
 
   <!-- Ego vehicle -->
-  <arg name='role_name' default='ego_vehicle'/>
-  <arg name="vehicle_filter" default='vehicle.*'/>
-  <arg name="spawn_point" default=""/><!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
+  <!-- <arg name='role_name' default='ego_vehicle'/> -->
+  <arg name='role_name' default='hero'/>
+  <!-- <arg name="vehicle_filter" default='vehicle.*'/> -->
+  <arg name="vehicle_filter" default="vehicle.lincoln.mkz_2017"/>
+
+  <arg name="spawn_point" default=""/> 
+  <!-- use comma separated format "x,y,z,roll,pitch,yaw" -->
 
   <!-- Map to load on startup (either a predefined CARLA town (e.g. 'Town01'), or a OpenDRIVE map file) -->
-  <arg name="town" default=''/>
-
+  <!-- <arg name="town" default='Town13'/> -->
+  <arg name="town" default='Town01'/>
   <!-- Enable/disable passive mode -->
   <arg name='passive' default=''/>
 
   <!-- Synchronous mode-->
-  <arg name='synchronous_mode_wait_for_vehicle_control_command' default='False'/>carla_ad_agent
-  <arg name='fixed_delta_seconds' default='0.05'/>
+  <arg name='synchronous_mode_wait_for_vehicle_control_command' default='False'/>
+  <arg name='fixed_delta_seconds' default='0.025'/>
 
 
   <include file="$(find carla_ros_bridge)/launch/carla_ros_bridge.launch">

@@ -1,0 +1,96 @@
+0th object detected6771.2, -5402.07
+1th object detected6771.06, -5416.98
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.06, -5395.58
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+0th object detected6771.2, -5401.99
+1th object detected6771.06, -5416.81
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.06, -5395.98
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+pose 6770.76 5443.44
+-1.5625
+next 6770.76 5442.44
+0th object detected6771.2, -5401.91
+1th object detected6771.07, -5416.63
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.06, -5396.38
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+0th object detected6771.2, -5401.82
+1th object detected6771.07, -5416.45
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.05, -5396.78
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+pose 6770.76 5443.44
+-1.5625
+next 6770.76 5442.44
+0th object detected6771.2, -5401.75
+1th object detected6771.07, -5416.27
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.05, -5397.18
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+pose 6770.76 5443.44
+-1.5625
+next 6770.76 5442.44
+0th object detected6771.2, -5401.73
+1th object detected6771.07, -5416.1
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.05, -5397.58
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+0th object detected6771.2, -5401.68
+1th object detected6771.07, -5415.95
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.04, -5397.98
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+0th object detected6771.2, -5401.6
+1th object detected6771.07, -5415.81
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.04, -5398.39
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+pose 6770.76 5443.44
+-1.5625
+next 6770.76 5442.44
+0th object detected6771.2, -5401.51
+1th object detected6771.08, -5415.68
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.04, -5398.79
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+pose 6770.76 5443.44
+-1.5625
+next 6770.76 5442.44
+0th object detected6771.2, -5401.44
+1th object detected6771.08, -5415.57
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.03, -5399.19
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+0th object detected6771.2, -5401.42
+1th object detected6771.08, -5415.51
+2th object detected6770.72, -5453.43
+3th object detected6770.66, -5463.49
+4th object detected6768.03, -5399.59
+num of objects :          0
+current car position :    (6770.76, 5443.44, -89.5)
+^Cpose 6770.76 5443.44
+-1.5625
+next 6770.76 5442.44
+(py37) ailab@team1:~/carla-ros-bridge/project_ws$ 
