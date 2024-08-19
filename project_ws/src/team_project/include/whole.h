@@ -35,6 +35,7 @@ namespace Plan{
         void const print_objects();
         void check_collision();
 
+
         protected:
         double          x_;
         double          y_;
@@ -47,7 +48,9 @@ namespace Plan{
     };
 
     class VelocityControl{
-        private:
+        public:
+
+        // private:
         //정속 속도
         double                  ref_low_, ref_high_;
         double                  ref_current_;
@@ -62,8 +65,20 @@ namespace Plan{
         //traffic sign 높이
         int                     traffic_sign_goal_fixel_;
         int                     traffic_sign_current_fixel_;
+
+
+        //new member
+        double                  acc_time_;
+        double                  safe_distance_;
+        object_flag             object_flag_;
+
+        bool                    aebflag(const std::vector<std::vector<State>>& trajectories, 
+                                        const std::vector<Result>& collision_result, const double& predict_time);
+        double                  get_acc_velocity( const std::vector<Result>& collision_result, const double& current_vel);
+
+        //prevaite function
         
-        public:
+        //protected:
         VelocityControl();
         double human();
         double control_loss();
@@ -71,6 +86,8 @@ namespace Plan{
         double corner_left();
         double corner_right();
         double normal(const Drive& drive);
+        double decide_vel(const std::vector<std::vector<State>>& trajectories, const std::vector<Result>& collision_result,
+            const double& current_vel, const double& predict_time);
     };
 
 
@@ -119,7 +136,6 @@ namespace Plan{
         //BehaviorPlan private function
         void                    update_flag(const Objects& Objects);
         void                    all_flag_false();
-        double                  decide_vel();
         Pos                     decide_way();
         //control value
         double                  ref_vel;

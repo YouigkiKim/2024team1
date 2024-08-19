@@ -38,16 +38,21 @@ namespace Plan{
         HIGH,
         LOW,
     };
-
+    struct object_flag{
+        bool                    human;
+        bool                    red_sign;
+        bool                    green_sign;
+        bool                    bycicle;
+    };
 
     struct Object{
-        double          x_;
-        double          y_;
-        double          width_;
-        double          length_;
-        double          yaw_;
-        std::string     flag_;
-        std::vector<Position> property_points_;
+        double                  x_;
+        double                  y_;
+        double                  width_;
+        double                  length_;
+        double                  yaw_;
+        std::string             flag_;
+        std::vector<Position>   property_points_;
 
         int             int_flag_;
         enum class      Flag{

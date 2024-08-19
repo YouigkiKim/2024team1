@@ -2,8 +2,6 @@
 
 
 namespace Plan{
-
-
     /*
     class planner
     */

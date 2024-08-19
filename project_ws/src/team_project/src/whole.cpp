@@ -97,28 +97,40 @@ namespace Plan{
         }
     }
 
-    double BehaviorPlan::decide_vel(){
-        if(human_flag_){
-           return human();
-        }else if(control_loss_flag_){
-            return control_loss();
-        }else if(traffic_sign_){
-            return traffic_sign();
-        }else if(corner_left_flag_){
-            return corner_left();
-        }else if(corner_right_flag_){
-            return corner_right();
-        }else{
-            return normal(drive_);
-        }
-        return -1;
-    }
+    // double BehaviorPlan::decide_vel(){
+    //     if(human_flag_){
+    //        return human();
+    //     }else if(control_loss_flag_){
+    //         return control_loss();
+    //     }else if(traffic_sign_){
+    //         return traffic_sign();
+    //     }else if(corner_left_flag_){
+    //         return corner_left();
+    //     }else if(corner_right_flag_){
+    //         return corner_right();
+    //     }else{
+    //         return normal(drive_);
+    //     }
+    //     return -1;
+    // }
 
-
+    /*
+    VelocityControl
+    */
+   /*
+    고려해야되는 상황
+    object  많을 때 > 고속
+            적을 때 > 저속
+    acc  -> 센터 트래잭토리의 ttc로 계산 -> 일정 수준의 ttc 유지하게 제어?
+    신호등 -> threshold픽셀에서 멈추기 -> 제동거리 생각해서 ref와 선형 or exponential로 잇기 -> exponential이 좋을 것 같음
+    aeb  -> 사람플래그 + 가운데 3개 트레젝토리 중 충돌판단 일어났을 때
+            센터 트레젝토리 ttc 1초 미만 -> ref vel = 0으로 전달
+   */
     VelocityControl::VelocityControl()
-        : ref_low_(20), ref_high_(40), 
+        : ref_low_(20/3.6), ref_high_(40/3.6), 
         control_loss_ratio_(0.7),human_flag_ratio_(0.5),traffic_sign_ratio_(1),
-        hard_break_time_(1.0), left_corner_ratio_(0.6), right_corner_ratio_(0.75){
+        hard_break_time_(1.0), left_corner_ratio_(0.6), right_corner_ratio_(0.75),
+        acc_time_(2.5), safe_distance_(3){
             ref_current_ = ref_low_;
     }
     double VelocityControl::human()         {   return ref_current_*human_flag_ratio_; }
@@ -146,7 +158,31 @@ namespace Plan{
         }
     }
 
+    double VelocityControl::decide_vel(const std::vector<std::vector<State>>& trajectories, 
+        const std::vector<Result>& collision_result, const double& current_vel, const double& predict_time){
 
+        double velocity = ref_current_;
+
+        if(collision_result[6].collision_time != predict_time) velocity = std::min(velocity, get_acc_velocity(collision_result, current_vel));
+
+        if(aebflag(trajectories, collision_result, predict_time )) velocity = 0.0;
+        return velocity;
+    }
+    bool VelocityControl::aebflag(const std::vector<std::vector<State>>& trajectories, 
+        const std::vector<Result>& collision_result, const double& predict_time){
+        if( object_flag_.human && (collision_result[6].collision_time != predict_time
+             || collision_result[1].collision_time != predict_time
+             || collision_result[2].collision_time != predict_time) )return true;
+        // if(조건들 추가하기)
+        return false;
+    }
+    double VelocityControl::get_acc_velocity(const std::vector<Result>& collision_result, const double& current_vel){
+        double acc_velocity = current_vel;
+        double distance = collision_result.back().collision_time * current_vel;
+        acc_velocity = (distance-safe_distance_) / acc_time_;
+        if(acc_velocity < 0.0) acc_velocity = 0.0;
+        return acc_velocity;
+    }
     /*
     WayPoints method
     */
@@ -182,8 +218,8 @@ namespace Plan{
         if(path.empty()) return; 
         // std::cout << dot_product_way(Pos(x,y,0), path) << " dot Product"<<std::endl;
         while( dot_product_way(Pos(x,y,0), path) < 0 ){
-            prev_point_.x_ = path.front() -> x_;
-            prev_point_.y_ = path.front() -> y_;
+            prev_point_.x_ = path.front() -> x_ ;
+            prev_point_.y_ = path.front() -> y_ ;
             // //debug code
             // std::cout << prev_point_.x_ << " "<< prev_point_.y_ << " popped";
             path.pop();
@@ -191,8 +227,8 @@ namespace Plan{
     }
 
     double WayPoint::dot_product_way(const Pos& pos, std::queue<std::shared_ptr<Point>>& path){
-        return cos((path.front() -> yaw_)*M_PI/180 ) * ( path.front() -> x_ - pos.x_) + 
-            sin((path.front() -> yaw_)*M_PI/180) * ( path.front() -> y_ - pos.y_);
+        return cos((path.front() -> yaw_)*M_PI/180 ) * ( path.front() -> x_ - pos.x_ ) + 
+            sin((path.front() -> yaw_)*M_PI/180) * ( path.front() -> y_ - pos.y_ );
     }
 
     Pos WayPoint::get_waypoint(const double& x, const double& y){

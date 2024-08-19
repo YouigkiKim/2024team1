@@ -82,6 +82,7 @@ private:
     std::vector<double> cluster_id_s;
 
     EgoState ego_;
+    
     std::atomic<bool> stop_visualization_;
     // Reference path
     std::vector<float> reference_xs;
@@ -100,6 +101,7 @@ private:
     void cloudCallback(const sensor_msgs::PointCloud2ConstPtr& input);
     void applyPassthroughFilter(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, pcl::PointCloud<pcl::PointXYZI>::Ptr& output);
     void applyCarRegionFilter(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, pcl::PointCloud<pcl::PointXYZI>::Ptr& output);
+    void applyErrorFilter(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, pcl::PointCloud<pcl::PointXYZI>::Ptr& output);
     void applyGroudnRemovalFilter(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, pcl::PointCloud<pcl::PointXYZI>::Ptr& output);
     void applyVoxelGridFilter(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input);
     void clustering_points(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input);
@@ -160,6 +162,7 @@ void LidarPreprocessor::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& in
         applyPassthroughFilter(cloud, cloud_out_);
         applyGroudnRemovalFilter(cloud_out_, cloud_out_);
         applyCarRegionFilter(cloud_out_, cloud_out_);
+        applyErrorFilter(cloud_out_, cloud_out_);
         applyVoxelGridFilter(cloud_out_);
 
     }
@@ -167,7 +170,7 @@ void LidarPreprocessor::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& in
     if (cloud_out_PCL2_) {
         sensor_msgs::PointCloud2 output;
         pcl_conversions::fromPCL(*cloud_out_PCL2_, output);
-        output.header.frame_id = input->header.frame_id;
+        output.header.frame_id = "hero/LIDAR";
         output.header.stamp = ros::Time::now();
         point_pub_.publish(output);
 
@@ -203,6 +206,20 @@ void LidarPreprocessor::applyCarRegionFilter(const pcl::PointCloud<pcl::PointXYZ
     box_filter.setNegative(true);
     box_filter.filter(*output);
 }
+
+void LidarPreprocessor::applyErrorFilter(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, pcl::PointCloud<pcl::PointXYZI>::Ptr& output) {
+    // 첫 번째 영역을 필터링
+    pcl::CropBox<pcl::PointXYZI> box_filter;
+    box_filter.setInputCloud(input);
+
+    // 잘라내고 싶은 영역의 min, max 좌표 설정
+    box_filter.setMin(Eigen::Vector4f(-10.0, -2.0, -0.55, 1.0));
+    box_filter.setMax(Eigen::Vector4f(4.0, 0.0, -0.0, 1.0));
+    
+    box_filter.setNegative(true);
+    box_filter.filter(*output);
+}
+
 
 void LidarPreprocessor::applyGroudnRemovalFilter(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, pcl::PointCloud<pcl::PointXYZI>::Ptr& output) {
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_low(new pcl::PointCloud<pcl::PointXYZI>);
@@ -590,9 +607,9 @@ void LidarPreprocessor::clustering_points(const pcl::PointCloud<pcl::PointXYZI>:
 
         for (const auto& index : indices.indices) {
             pcl::PointXYZRGB point;
-            point.x = - input->points[index].x;
-            point.y = - input->points[index].y;
-            point.z = input->points[index].z + 2.0;
+            point.x = input->points[index].x;
+            point.y = input->points[index].y;
+            point.z = input->points[index].z;
             point.r = r;
             point.g = g;
             point.b = b;
@@ -731,6 +748,25 @@ void LidarPreprocessor::broadcastCarlaTransform(const EgoState& ego) {
     transformStamped.transform.rotation.w = q.w();
 
     br.sendTransform(transformStamped);
+
+    // hero/front 프레임의 변환 설정
+    geometry_msgs::TransformStamped front_transform;
+    front_transform.header.stamp = ros::Time::now();
+    front_transform.header.frame_id = "hero";
+    front_transform.child_frame_id = "hero/LIDAR";
+
+    front_transform.transform.translation.x = 0.0;
+    front_transform.transform.translation.y = 0.0;
+    front_transform.transform.translation.z = 2.0; // z 축에서 2.0만큼 올라감
+
+    // hero와 같은 방향을 유지하기 위해 회전은 0으로 설정
+    front_transform.transform.rotation.x = 0.0;
+    front_transform.transform.rotation.y = 0.0;
+    front_transform.transform.rotation.z = 0.0;
+    front_transform.transform.rotation.w = 1.0;
+
+    // Transform을 브로드캐스트
+    br.sendTransform(front_transform);
 }
 
 void LidarPreprocessor::visualize(){
@@ -805,8 +841,8 @@ void LidarPreprocessor::spin() {
             {
                 // std::lock_guard<std::mutex> lock(cloud_mutex_);
                 ros::spinOnce();
-                clustering_points(cloud_out_);
                 broadcastCarlaTransform(ego_);
+                clustering_points(cloud_out_);
                 rate.sleep();
                 // visualize();
             }  

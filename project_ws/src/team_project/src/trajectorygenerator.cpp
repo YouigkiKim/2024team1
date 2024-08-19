@@ -29,9 +29,9 @@ namespace Plan{
     //여기서의 yaw -> 차량기준
     void TrajectoryGenerator::update_generator_state(const double& x,const double&y,const double&yaw){
         ego_yaw_ = yaw;
-        transform_mat_ <<   cos(yaw),sin(yaw) ,x, 
-                            -sin(yaw),cos(yaw) ,y,
-                            0,0 ,1 ;
+        transform_mat_ <<   cos(-yaw),sin(-yaw) ,x,          
+                            -sin(-yaw),cos(-yaw) ,y,
+                            0, 0 ,1 ;
     }
 
 
@@ -103,6 +103,7 @@ namespace Plan{
             //transform to global
             Eigen::Vector3d vec;
             x +=dx;
+            // x -= 1.45;
             vec << x,
                     l,
                     1; 

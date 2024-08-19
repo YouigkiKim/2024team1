@@ -36,12 +36,15 @@ namespace Plan{
         void update_current_state(const Pos pos,const double v, const double w);
         void update_current_state(const Object object,const double yaw, const double v, const double w);
         void update_collision_state(const double& x,const double& y ,const double&,const double& yaw);
+
+
         public:
         CollisionChecker();
         CollisionChecker(const double pt, const double dt, const double r);
         void check_collision(const Objects& objects,const double& x,const double& y,const double& yaw,  const double& yaw_error, const double& velocity);
         void visualization_circles(const rviz_visual_tools::RvizVisualToolsPtr& visual_tools);
         void visualization_collision(const rviz_visual_tools::RvizVisualToolsPtr& visual_tools);
+        
         std::vector<Result>                 result_;
         std::vector<std::vector<State>>     after_trajectories_;
     };

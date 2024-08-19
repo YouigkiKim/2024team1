@@ -67,14 +67,14 @@ namespace Plan{
         Pos ref_way_;
         //call back funstion
         void callback_objects(const derived_object_msgs::ObjectArray::ConstPtr& msg);
-        void regist_property_points(Object& object, const geometry_msgs::Polygon& msg);
+        // void regist_property_points(Object& object, const geometry_msgs::Polygon& msg);
         void callback_pose(const custom_msgs::vehicle_state::ConstPtr& msg);
         void callback_speed(const carla_msgs::CarlaSpeedometer::ConstPtr& msg);
 
         //publish_function  > 하나로 합칠까
         void publish_way();
         void publish_velocity();
-        void publish_trajectory();
+        // void publish_trajectory();
         void publish_ref();
         void publish_collision();
     };

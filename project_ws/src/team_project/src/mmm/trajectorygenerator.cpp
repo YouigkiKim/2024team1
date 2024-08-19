@@ -30,8 +30,8 @@ namespace Plan{
     //여기서의 yaw -> 차량기준
     void TrajectoryGenerator::update_generator_state(const double& x,const double&y,const double&yaw){
         ego_yaw_ = yaw;
-        transform_mat_ <<   cos(yaw),sin(yaw) ,x, 
-                            -sin(yaw),cos(yaw) ,y,
+        transform_mat_ <<   cos(-yaw),sin(-yaw) ,x - 1.45*cos(-yaw), 
+                            -sin(-yaw),cos(-yaw) ,y - 1.45*sin(-yaw),
                             0,0 ,1 ;
     }
 

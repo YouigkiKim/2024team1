@@ -12,8 +12,6 @@ namespace Plan{
         ego_.length_ = 4.93;
         x_offset_ = ego_.length_/3;
         ego_circle_.radius = sqrt(0.25*ego_.width_*ego_.width_+ x_offset_*x_offset_*0.25);
-
-
     };
     CollisionChecker::CollisionChecker(const double pt, const double dt, const double r)
         : predict_time_(pt), dt_(dt), circle_radius_(r){
@@ -21,19 +19,17 @@ namespace Plan{
             predict_step_ = predict_time_/dt_;
     };
     void CollisionChecker::update_current_state(double x, double y, double yaw, double v, double w){
-        current_pos_.x_ = x;
-        current_pos_.y_ = y;
+        current_pos_.x_ = x -1.45*cos(-yaw);
+        current_pos_.y_ = y-1.45*sin(-yaw);
         current_pos_.yaw_ = yaw;
     }
     void CollisionChecker::update_collision_state(const double& x,const double& y ,const double&,const double& yaw){
-        current_pos_.x_ = x;
-        current_pos_.y_ = y;
+        current_pos_.x_ = x-1.45*cos(-yaw);
+        current_pos_.y_ = y-1.45*sin(-yaw);
         current_pos_.yaw_ = yaw;
-
     }
     void CollisionChecker::update_current_state(Pos pos, double v, double w){
         current_pos_ = pos;
-
     }
     void CollisionChecker::update_current_state(Object object,double yaw, double v, double w){
         current_pos_.x_ = object.x_;
@@ -53,12 +49,14 @@ namespace Plan{
     }
     //object기준으로 circle그리기 trajectory가 들어오고 -> predict_ego하고 -> collision check하는 순서 -> 충돌시간 충돌위치 반환,
     void CollisionChecker::draw_circle(Circle& circle, const Object& object, const double& ego_yaw){
-        if(object.length_ > 0.8 || object.width_ > 0.8 ){
+        if(object.length_/object.width_ > 1.4 || object.length_/object.width_ < 1/1.4){
             // two circle 
-            double x_offset = object.length_/3;
-            circle.radius = sqrt(0.25*object.width_*object.width_+ x_offset*x_offset*0.25);
-            double dx = x_offset*cos(-ego_yaw);
-            double dy = x_offset*sin(-ego_yaw);
+            double x_offset = std::max(object.length_,object.width_)/3;
+            // circle.radius = sqrt(0.25*object.width_*object.width_+ x_offset*x_offset*0.25);
+            circle.radius = std::min(object.width_, object.length_)/2;
+            double dx, dy;
+            dx = x_offset*cos(-ego_yaw);
+            dy = x_offset*sin(-ego_yaw);
             Position temp1, temp2;
             temp1.x_ =  object.x_ + dx;
             temp1.y_ = object.y_ + dy;
@@ -110,7 +108,7 @@ namespace Plan{
             trajectories.pop();
             trajectory_num ++;
         }
-    };
+    }
     void CollisionChecker::predict_ego(const Pos& start_pose, const double& velocity,const double& ang_vel){
 
         predicted_ego.clear();
@@ -261,11 +259,11 @@ namespace Plan{
         // ego_start2 << ego_circle_.centerpoints_[1].x_ , ego_circle_.centerpoints_[1].y_, 0.0;
         // ego_end2 << ego_circle_.centerpoints_[1].x_ , ego_circle_.centerpoints_[1].y_,2.0;
 
-        if(! visual_tools -> publishCylinder(ego_start1, ego_end1, rviz_visual_tools::colors::BLUE,  1)){
+        if(! visual_tools -> publishCylinder(ego_start1, ego_end1, rviz_visual_tools::colors::PINK,  1)){
             ROS_INFO(" collision result visualization fault");
 
         };
-        if(! visual_tools -> publishCylinder(ego_start2, ego_end2, rviz_visual_tools::colors::BLUE,  1)){
+        if(! visual_tools -> publishCylinder(ego_start2, ego_end2, rviz_visual_tools::colors::PINK,  1)){
             ROS_INFO(" collision result visualization fault");
 
         };

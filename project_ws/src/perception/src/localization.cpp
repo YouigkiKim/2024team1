@@ -392,29 +392,29 @@ private:
     }
 
 
-    //tfpub
-    void publishTf(const double& x,const double& y, const double& yaw ){
-        geometry_msgs::TransformStamped transformStamped;
+    // //tfpub
+    // void publishTf(const double& x,const double& y, const double& yaw ){
+    //     geometry_msgs::TransformStamped transformStamped;
         
-        transformStamped.header.stamp = ros::Time::now();
-        transformStamped.header.frame_id = "map";  // 부모 프레임
-        transformStamped.child_frame_id = "hero"; // 자식 프레임
+    //     transformStamped.header.stamp = ros::Time::now();
+    //     transformStamped.header.frame_id = "map";  // 부모 프레임
+    //     transformStamped.child_frame_id = "hero"; // 자식 프레임
 
-        // 변환 설정 (위치 및 회전)
-        transformStamped.transform.translation.x = x;
-        transformStamped.transform.translation.y = y;
-        transformStamped.transform.translation.z = 0.0;
+    //     // 변환 설정 (위치 및 회전)
+    //     transformStamped.transform.translation.x = x;
+    //     transformStamped.transform.translation.y = y;
+    //     transformStamped.transform.translation.z = 0.0;
 
-        tf2::Quaternion quat;
-        quat.setRPY(0, 0, -yaw);  // 회전을 쿼터니언으로 설정 (롤, 피치, 요)
-        transformStamped.transform.rotation.x = quat.x();
-        transformStamped.transform.rotation.y = quat.y();
-        transformStamped.transform.rotation.z = quat.z();
-        transformStamped.transform.rotation.w = quat.w();
+    //     tf2::Quaternion quat;
+    //     quat.setRPY(0, 0, -yaw);  // 회전을 쿼터니언으로 설정 (롤, 피치, 요)
+    //     transformStamped.transform.rotation.x = quat.x();
+    //     transformStamped.transform.rotation.y = quat.y();
+    //     transformStamped.transform.rotation.z = quat.z();
+    //     transformStamped.transform.rotation.w = quat.w();
 
-        // TF 발행
-        tf_broadcaster.sendTransform(transformStamped);
-    }
+    //     // TF 발행
+    //     tf_broadcaster.sendTransform(transformStamped);
+    // }
     void publishVehicleState() {
         custom_msgs::vehicle_state state_msg;
         state_msg.x = ego.x;
@@ -422,7 +422,7 @@ private:
         state_msg.heading = ego.heading;
         state_pub.publish(state_msg);
         //tfpub
-        publishTf(ego.x,ego.y,ego.heading);
+        // publishTf(ego.x,ego.y,ego.heading);
     }
 };
 

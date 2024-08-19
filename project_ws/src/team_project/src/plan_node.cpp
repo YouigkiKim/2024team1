@@ -35,9 +35,9 @@ namespace Plan{
     }
 
     void PlanNode::callback_pose(const custom_msgs::vehicle_state::ConstPtr& msg){
-        x_ = msg -> x;
-        y_ = msg -> y;
         yaw_ = msg -> heading;
+        x_ = msg -> x ;
+        y_ = msg -> y ;
 
         // By Custom Message
         //x_ = msg -> x;
@@ -46,17 +46,17 @@ namespace Plan{
 
         // ROS_INFO("by pose           %f %f ", x_,y_);
     }
-    void PlanNode::regist_property_points(Object& object, const geometry_msgs::Polygon& msg){
-        object.property_points_.clear();
-        // //Debug Code
-        // object.property_points_.push_back(Position(1, 1));
-        // std::cout <<"polygon register"<< object.property_points_[0].x_ <<object.property_points_[0].y_<<std::endl;
-        if(msg.points.size() != 0){
-            for(const auto& position : msg.points){
-                object.property_points_.push_back( Position(position.x, position.y) );
-            }
-        }
-    }
+    // void PlanNode::regist_property_points(Object& object, const geometry_msgs::Polygon& msg){
+    //     object.property_points_.clear();
+    //     // //Debug Code
+    //     // object.property_points_.push_back(Position(1, 1));
+    //     // std::cout <<"polygon register"<< object.property_points_[0].x_ <<object.property_points_[0].y_<<std::endl;
+    //     if(msg.points.size() != 0){
+    //         for(const auto& position : msg.points){
+    //             object.property_points_.push_back( Position(position.x, position.y) );
+    //         }
+    //     }
+    // }
     //call back function
     void PlanNode::callback_objects(const derived_object_msgs::ObjectArray::ConstPtr& msg ){
         objects_.object_num_ = 0;
@@ -66,16 +66,16 @@ namespace Plan{
             objects_.objects_[objects_.object_num_].x_          =   object.pose.position.x;
             objects_.objects_[objects_.object_num_].y_          =   object.pose.position.y;
             objects_.objects_[objects_.object_num_].int_flag_   =   object.classification;
-            objects_.objects_[objects_.object_num_].width_      =   object.shape.BOX_Y;
-            objects_.objects_[objects_.object_num_].length_     =   object.shape.BOX_X;
+            objects_.objects_[objects_.object_num_].width_      =   abs(object.shape.dimensions[shape_msgs::SolidPrimitive::BOX_Y]);
+            objects_.objects_[objects_.object_num_].length_     =   abs(object.shape.dimensions[shape_msgs::SolidPrimitive::BOX_X]);
             // std::cout <<"object size ===========    " << object.shape.BOX_Y << "  "<< object.shape.BOX_Y << "      ======"<<std::endl;
             // regist_property_points(objects_.objects_[objects_.object_num_], object.polygon);
             // std::cout << objects_.object_num_<<"th object detected "<<objects_.objects_[objects_.object_num_].x_<<", "<<objects_.objects_[objects_.object_num_].y_<<std::endl;
 
             objects_.object_num_ ++;
         }
-        print_objects();
-        ROS_INFO("object callback object num : %d", objects_.object_num_);
+        // print_objects();
+        // ROS_INFO("object callback object num : %d", objects_.object_num_);
     }
     
     void PlanNode::callback_speed(const carla_msgs::CarlaSpeedometer::ConstPtr& msg){
@@ -87,43 +87,45 @@ namespace Plan{
         ref_msg_.x = waypoint.x_;
         ref_msg_.y = waypoint.y_;
         ref_msg_.yaw = waypoint.yaw_;
-        ref_msg_.velocity = 15/3.6;
+        // ref_msg_.velocity = 15/3.6;
+        double predicttime = 3.0;
+        ref_msg_.velocity = decide_vel(after_trajectories_, result_, vel_, predicttime);
         ref_msg_.aeb_flag = false;
         // std::cout << "pose "<<x_<<" "<<y_<<std::endl; 
         // std::cout << "next "<<waypoint.x_<<" "<<waypoint.y_<<std::endl; 
         ref_pub_.publish(ref_msg_);
     }
-    void PlanNode::publish_trajectory(){
-        auto road_pose = get_waypoint(x_,y_);
-        produce_trajectories(x_,y_,yaw_,yaw_- road_pose.yaw_,vel_);
+    // void PlanNode::publish_trajectory(){
+    //     auto road_pose = get_waypoint(x_,y_);
+    //     produce_trajectories(x_,y_,yaw_,yaw_- road_pose.yaw_,vel_);
 
-        geometry_msgs::PoseStamped temp;
-        tf2::Quaternion q;
-        int i=0;
-        for(auto trajectory : after_trajectories_){
-            // std::cout << after_trajectories_.size()<<std::endl;
-            path_msgs_[i].poses.clear();
-            for(auto state: trajectory){
-                temp.pose.position.x = state.x_;
-                temp.pose.position.y = state.y_;
-                q.setRPY(0,0,state.yaw_);
-                temp.pose.orientation.x = q.x();
-                temp.pose.orientation.y = q.y();
-                temp.pose.orientation.z = q.z();
-                temp.pose.orientation.w = q.w();
-                // std::cout << state.x_ << state.y_ << "   ";
-                path_msgs_[i].poses.push_back(temp);
-            }
-            std::cout << std::endl;
-            i++;
-        }
-        for(int i=0;i< path_msgs_.size();i++ ){
-            trajectory_pubs_[i].publish(path_msgs_[i]);
-        }
-    }
+    //     geometry_msgs::PoseStamped temp;
+    //     tf2::Quaternion q;
+    //     int i=0;
+    //     for(auto trajectory : after_trajectories_){
+    //         // std::cout << after_trajectories_.size()<<std::endl;
+    //         path_msgs_[i].poses.clear();
+    //         for(auto state: trajectory){
+    //             temp.pose.position.x = state.x_;
+    //             temp.pose.position.y = state.y_;
+    //             q.setRPY(0,0,state.yaw_);
+    //             temp.pose.orientation.x = q.x();
+    //             temp.pose.orientation.y = q.y();
+    //             temp.pose.orientation.z = q.z();
+    //             temp.pose.orientation.w = q.w();
+    //             // std::cout << state.x_ << state.y_ << "   ";
+    //             path_msgs_[i].poses.push_back(temp);
+    //         }
+    //         std::cout << std::endl;
+    //         i++;
+    //     }
+    //     for(int i=0;i< path_msgs_.size();i++ ){
+    //         trajectory_pubs_[i].publish(path_msgs_[i]);
+    //     }
+    // }
     void PlanNode::publish_collision(){
         auto road_pose = get_waypoint(x_,y_);
-        produce_trajectories(x_,y_,yaw_, road_pose.yaw_ - yaw_ ,20);
+        // produce_trajectories(x_,y_,yaw_, road_pose.yaw_ - yaw_ ,20);
         CollisionChecker::check_collision(objects_, x_,y_,yaw_,  road_pose.yaw_ - yaw_,vel_);
     }
     void PlanNode::publish(){

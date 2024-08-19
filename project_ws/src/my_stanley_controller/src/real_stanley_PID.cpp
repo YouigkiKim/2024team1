@@ -37,7 +37,7 @@ private:
 class Controller {
 public:
     Controller() : pid_(1.20431, 0.031026405, 0.02805) {
-        nh_.param("k", k_,2.1);
+        nh_.param("k", k_, 2.81);
         nh_.param("k_p", k_p_, 1.0);
         nh_.param("h", h_, 10.0);
         nh_.param("max_steering_angle", max_steering_angle_, 0.61);  // rad
@@ -53,8 +53,8 @@ public:
     }
     // 콜백 함수들
     void vehiclestateCallback(const custom_msgs::vehicle_state::ConstPtr& msg) {
-        current_position_ = {msg->x, msg->y};
         current_yaw_ = msg->heading;
+        current_position_ = {msg->x , msg->y};
         ROS_INFO("Vehicle state received: x: %f ,y:%f, yaw:%f", msg->x, msg->y, msg->heading);
     }
 
@@ -64,7 +64,7 @@ public:
     }
 
     void refControlCallback(const custom_msgs::ref_control::ConstPtr& msg) {
-        target_point_ = {msg->x, msg->y};
+        target_point_ = {msg->x , msg->y};
         target_velocity_ = msg->velocity;
         target_yaw_ = msg->yaw;
         aeb_flag_ = msg->aeb_flag;
@@ -110,7 +110,7 @@ public:
 
             while (heading_error < -M_PI) {
             heading_error += 2 * M_PI;
-            }
+            } 
 
             double delta = k_p_ * heading_error + atan2(k_ * cte, h_ + current_velocity_);
 
@@ -130,9 +130,11 @@ public:
                 control_cmd_.throttle = 0.0;
                 control_cmd_.brake = -control_effort;
             }
-            // if (target_velocity_ == 0.0) {
-            //     control_cmd_.throttle = 0.0;
-            // }
+
+            if (target_velocity_ == 0.0) {
+                control_cmd_.throttle = 0.0;
+                control_cmd_.brake = 0.0;
+            }
         } 
         else {  // aeb_flag_가 1(true)일 때는 풀브레이크
             control_cmd_.throttle = 0.0;

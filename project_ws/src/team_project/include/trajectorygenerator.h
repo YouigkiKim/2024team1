@@ -62,9 +62,6 @@ namespace Plan{
         void get_trajectories(const double& psi, const double& v0 );
         void extend_trajectory(std::vector<State>& trajectory,const double& v0,  double& sf);
     };
-
-
-
 } //namespace Plan end
 
 
