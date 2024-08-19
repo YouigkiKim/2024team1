@@ -1,0 +1,8 @@
+<launch>
+  <!-- <param name="Q_gain" type="double" value="0.001"/>
+  <param name="R_gain" type="double" value="1"/> -->
+  <param name="/use_sim_time" value="true"/>
+  
+  <node pkg="perception" type="localization_node" name="localization_node" output="screen"/>
+
+</launch>

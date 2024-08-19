@@ -3,11 +3,10 @@
     [
 
         {
-            "type": "vehicle.tesla.model3",
-            "id": "ego_vehicle",
+            "type": "vehicle.lincoln.mkz_2017",
+            "id": "hero",
             "sensors": 
             [
-
             ]
         }
     ]
