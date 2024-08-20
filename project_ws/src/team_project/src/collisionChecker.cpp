@@ -11,31 +11,15 @@ namespace Plan{
         ego_.width_ = 1.896;
         ego_.length_ = 4.93;
         x_offset_ = ego_.length_/3;
-        ego_circle_.radius = sqrt(0.25*ego_.width_*ego_.width_+ x_offset_*x_offset_*0.25);
+        // ego_circle_.radius = sqrt(0.25*ego_.width_*ego_.width_+ x_offset_*x_offset_*0.25);
+        ego_circle_.radius = ego_.width_/2;
     };
     CollisionChecker::CollisionChecker(const double pt, const double dt, const double r)
         : predict_time_(pt), dt_(dt), circle_radius_(r){
             // circles_pos.push_back(Object(-1.0,0));
             predict_step_ = predict_time_/dt_;
     };
-    void CollisionChecker::update_current_state(double x, double y, double yaw, double v, double w){
-        current_pos_.x_ = x -1.45*cos(-yaw);
-        current_pos_.y_ = y-1.45*sin(-yaw);
-        current_pos_.yaw_ = yaw;
-    }
-    void CollisionChecker::update_collision_state(const double& x,const double& y ,const double&,const double& yaw){
-        current_pos_.x_ = x-1.45*cos(-yaw);
-        current_pos_.y_ = y-1.45*sin(-yaw);
-        current_pos_.yaw_ = yaw;
-    }
-    void CollisionChecker::update_current_state(Pos pos, double v, double w){
-        current_pos_ = pos;
-    }
-    void CollisionChecker::update_current_state(Object object,double yaw, double v, double w){
-        current_pos_.x_ = object.x_;
-        current_pos_.y_ = object.y_;
-        current_pos_.yaw_ = yaw;
-    }
+
 
     void CollisionChecker::draw_circles(const Objects& objects, const double& ego_yaw){
         circles_.clear();
@@ -51,12 +35,12 @@ namespace Plan{
     void CollisionChecker::draw_circle(Circle& circle, const Object& object, const double& ego_yaw){
         if(object.length_/object.width_ > 1.4 || object.length_/object.width_ < 1/1.4){
             // two circle 
-            double x_offset = std::max(object.length_,object.width_)/3;
+            double x_offset = object.length_/3;
             // circle.radius = sqrt(0.25*object.width_*object.width_+ x_offset*x_offset*0.25);
-            circle.radius = std::min(object.width_, object.length_)/2;
+            circle.radius = object.width_/2;
             double dx, dy;
             dx = x_offset*cos(-ego_yaw);
-            dy = x_offset*sin(-ego_yaw);
+            dy = x_offset*sin(ego_yaw);
             Position temp1, temp2;
             temp1.x_ =  object.x_ + dx;
             temp1.y_ = object.y_ + dy;
@@ -79,7 +63,7 @@ namespace Plan{
         }
     }
     void CollisionChecker::predict_egos(std::queue<std::vector<State>>& trajectories, Pos& ego_pos){
-        for(auto temp : predicted_egos){
+        for(auto& temp : predicted_egos){
             temp.clear();
         }
         predicted_egos.clear();
@@ -109,22 +93,8 @@ namespace Plan{
             trajectory_num ++;
         }
     }
-    void CollisionChecker::predict_ego(const Pos& start_pose, const double& velocity,const double& ang_vel){
 
-        predicted_ego.clear();
-        Pos prev_pose = start_pose;
-        Pos current_pos;
-        for (int i=0;i<predict_step_;i++){
-            current_pos.yaw_ = prev_pose.yaw_+dt_*ang_vel;
-            current_pos.x_ = prev_pose.x_ + cos(current_pos.yaw_)*dt_*velocity;
-            current_pos.y_ = prev_pose.y_ + sin(current_pos.yaw_)*dt_*velocity;
-            predicted_ego.push_back(current_pos);
-            prev_pose = current_pos;
-            // std::cout << "predicted after "<< dt_*(i+1)<<"  "<<current_pos.x_<<", "<<current_pos.y_<<std::endl;
-        }
-    }
-
-    void CollisionChecker::collision_check(const std::vector<Circle>& circles){
+    void CollisionChecker::collision_check(const std::vector<Circle>& circles,const rviz_visual_tools::RvizVisualToolsPtr& visual_tools){
         result_.clear();
         bool break_flag = false;
         for(auto ego_poses : predicted_egos){
@@ -142,6 +112,9 @@ namespace Plan{
                     Pos ego_circle2;
                     ego_circle2.x_ = ego_circle_.centerpoints_[1].x_;
                     ego_circle2.y_ = ego_circle_.centerpoints_[1].y_;
+                    Pos ego_circle3;
+                    ego_circle3.x_ = ego_circle_.centerpoints_[2].x_;
+                    ego_circle3.y_ = ego_circle_.centerpoints_[2].y_;
 
                     if(circle.centerpoints_.size() ==2 ){
                         Pos temp1 = Pos(circle.centerpoints_[0].x_, circle.centerpoints_[0].y_, 0);
@@ -150,9 +123,12 @@ namespace Plan{
                         double distance_square2 = distance_square(ego_circle2,temp1 );
                         double distance_square3 = distance_square(ego_circle1,temp2 );
                         double distance_square4 = distance_square(ego_circle2,temp2 );
+                        double distance_square5 = distance_square(ego_circle3,temp1 );
+                        double distance_square6 = distance_square(ego_circle3,temp2 );
                         double threshold = circle.radius+ego_circle_.radius;
                         if(distance_square1 <threshold*threshold ||distance_square2 <threshold*threshold||
-                            distance_square3 < threshold*threshold || distance_square4 < threshold*threshold ){
+                            distance_square3 < threshold*threshold || distance_square4 < threshold*threshold ||
+                            distance_square5 < threshold*threshold||distance_square6 < threshold*threshold){
                             Result temp;
                             temp.collision_time = i*0.5;
                             temp.collision_spot = ego_pose;
@@ -164,8 +140,10 @@ namespace Plan{
                         Pos temp1 = Pos(circle.centerpoints_[0].x_, circle.centerpoints_[0].y_, 0);
                         double distance_square1 = distance_square(ego_circle1,temp1 );
                         double distance_square2 = distance_square(ego_circle2,temp1 );
+                        double distance_square3 = distance_square(ego_circle3,temp1 );
                         double threshold = circle.radius+ego_circle_.radius;
-                        if(distance_square1 <threshold*threshold ||distance_square2 <threshold*threshold ){
+                        if(distance_square1 <threshold*threshold ||distance_square2 <threshold*threshold ||
+                            distance_square3 < threshold*threshold){
                             Result temp;
                             temp.collision_time = i*0.5;
                             temp.collision_spot = ego_pose;
@@ -187,10 +165,10 @@ namespace Plan{
                 result_.push_back(temp);
             }
         }
-        std::cout << "collision check result ======="<<std::endl;
-        for(auto result : result_){
-            std::cout <<"  collision spot "<< result.collision_spot.x_<< ", "<<result.collision_spot.y_ <<"  collisiont time : "<<result.collision_time<<std::endl;
-        }
+        // std::cout << "collision check result ======="<<std::endl;
+        // for(auto result : result_){
+        //     std::cout <<"  collision spot "<< result.collision_spot.x_<< ", "<<result.collision_spot.y_ <<"  collisiont time : "<<result.collision_time<<std::endl;
+        // }
     } 
     
     
@@ -198,25 +176,29 @@ namespace Plan{
     void CollisionChecker::draw_ego_circle(const Object& ego){
         ego_circle_.centerpoints_.clear();
         double& x_offset = x_offset_;
-        double dx = x_offset*cos(-ego.yaw_);
-        double dy = x_offset*sin(-ego.yaw_);
-        Position temp1, temp2;
+        double dx = x_offset*cos(-ego_yaw_);
+        double dy =  - x_offset*sin(-ego_yaw_);
+        Position temp1, temp2, temp3;
         temp1.x_ =  ego.x_ + dx;
         temp1.y_ = ego.y_ + dy;
         temp2.x_ = ego.x_-dx;
         temp2.y_ = ego.y_-dy;
+        temp3.x_ = ego.x_;
+        temp3.y_ = ego.y_;
         ego_circle_.centerpoints_.push_back(temp1);
         ego_circle_.centerpoints_.push_back(temp2);
+        ego_circle_.centerpoints_.push_back(temp3);
         // std::cout << "=======ego circle    "<<temp1.x_ << " "<<temp1.y_ << ",    "<<temp2.x_ <<"  "<<temp2.y_ << std::endl; 
         // std::cout <<"ego circle1 position x,y : "<< temp1.x_ <<" "<<temp1.y_<<std::endl;
         // std::cout <<"ego circle2 position x,y : "<< temp2.x_ <<" "<<temp2.y_<<std::endl;
     }
-    void CollisionChecker::check_collision(const Objects& objects,const double& x,const double& y,const double& yaw,  const double& yaw_error, const double& velocity){
+    void CollisionChecker::check_collision(const Objects& objects,const double& x,const double& y,const double& yaw,  const double& yaw_error, const double& velocity,
+        const rviz_visual_tools::RvizVisualToolsPtr& visual_tools){
         update_generator_state(x,y,yaw);
         get_trajectories(yaw_error, velocity);
         predict_egos(trajectories_,current_pos_);
         draw_circles(objects, yaw);
-        collision_check(circles_);
+        collision_check(circles_, visual_tools);
     }
 
     void CollisionChecker::visualization_circles(const rviz_visual_tools::RvizVisualToolsPtr& visual_tools){
@@ -237,12 +219,15 @@ namespace Plan{
         Eigen::Vector3d ego_end1;
         Eigen::Vector3d ego_start2;
         Eigen::Vector3d ego_end2;
-
         ego_start1 << x_offset_,0,1;
-        ego_end1 << x_offset_,0,1;
+        ego_end1 <<  x_offset_,0,1;
+        ego_start2 <<  -x_offset_,0,1;
+        ego_end2 <<  -x_offset_,0,1;
+        // ego_start1 << predicted_egos.back().front().x_,predicted_egos.back().front().y_,0;
+        // ego_end1 << predicted_egos.back().front().x_,predicted_egos.back().front().y_,2;
 
-        ego_start2<< -x_offset_,0,1;
-        ego_end2<< -x_offset_,0,1;
+        // ego_start2<< predicted_egos.back().back().x_,predicted_egos.back().back().y_,0;
+        // ego_end2<< predicted_egos.back().back().x_,predicted_egos.back().back().y_,2;
 
         ego_start1 = transform_mat_*ego_start1;
         ego_start2 = transform_mat_*ego_start2;
@@ -259,13 +244,12 @@ namespace Plan{
         // ego_start2 << ego_circle_.centerpoints_[1].x_ , ego_circle_.centerpoints_[1].y_, 0.0;
         // ego_end2 << ego_circle_.centerpoints_[1].x_ , ego_circle_.centerpoints_[1].y_,2.0;
 
-        if(! visual_tools -> publishCylinder(ego_start1, ego_end1, rviz_visual_tools::colors::PINK,  1)){
+        if(! visual_tools -> publishCylinder(ego_start1, ego_end1, rviz_visual_tools::colors::PINK, ego_.width_/2)){
             ROS_INFO(" collision result visualization fault");
 
         };
-        if(! visual_tools -> publishCylinder(ego_start2, ego_end2, rviz_visual_tools::colors::PINK,  1)){
+        if(! visual_tools -> publishCylinder(ego_start2, ego_end2, rviz_visual_tools::colors::PINK,  ego_.width_/2)){
             ROS_INFO(" collision result visualization fault");
-
         };
     }
     void CollisionChecker::visualization_collision(const rviz_visual_tools::RvizVisualToolsPtr& visual_tools){

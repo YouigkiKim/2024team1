@@ -57,7 +57,8 @@ namespace Plan{
         //generator function
         double get_route(const double& y);
         double get_velocity(const double &y);
-        void get_trajectory(std::vector<State>& trajectory,std::vector<double>& kappas, const double& c1, const double&c2, const double& c3, double sf, const double& v0);
+        void get_trajectory(std::vector<State>& trajectory,std::vector<double>& kappas, const double& c1, const double&c2, const double& c3, double sf, const double& v0
+                            ,const double& y_offset);
         void update_generator_state(const double& x,const double&y,const double&yaw);
         void get_trajectories(const double& psi, const double& v0 );
         void extend_trajectory(std::vector<State>& trajectory,const double& v0,  double& sf);

@@ -1,6 +1,6 @@
 <launch>
   <param name="use_sim_time" value="True"/>
   <include file="$(find perception)/launch/perception.launch"/>
-  <node name="plan_node" pkg="team_project" type="plan_node" output="screen"/>
+  <!-- <node name="plan_node" pkg="team_project" type="plan_node" output="screen"/> -->
   <include file="$(find my_stanley_controller)/launch/my_stanley_controller.launch"/>
 </launch>

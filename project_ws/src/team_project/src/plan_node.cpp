@@ -10,7 +10,6 @@ namespace Plan{
         way_pub_ = nh.advertise<geometry_msgs::Point>("/ref/ref_point",10);
         vel_pub_ = nh.advertise<std_msgs::Float64>("/ref/ref_vel",10);
         ref_pub_ = nh.advertise<custom_msgs::ref_control>("/ref/control",10);
-        collision_pub_ = nh.advertise<visualization_msgs::MarkerArray>("/plan/collision",10);
         for(int i=0; i<path_num_;i++){
             std::string topic_name = "/plan/path" + std::to_string(i); 
             ros::Publisher trajectory_pub = nh.advertise<nav_msgs::Path>(topic_name,10);
@@ -126,7 +125,7 @@ namespace Plan{
     void PlanNode::publish_collision(){
         auto road_pose = get_waypoint(x_,y_);
         // produce_trajectories(x_,y_,yaw_, road_pose.yaw_ - yaw_ ,20);
-        CollisionChecker::check_collision(objects_, x_,y_,yaw_,  road_pose.yaw_ - yaw_,vel_);
+        CollisionChecker::check_collision(objects_, x_,y_,yaw_,  road_pose.yaw_ - yaw_,vel_, visual_tools_);
     }
     void PlanNode::publish(){
         update_flag(objects_);

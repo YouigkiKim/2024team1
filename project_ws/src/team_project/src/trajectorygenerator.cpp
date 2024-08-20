@@ -19,7 +19,7 @@ namespace Plan{
     double TrajectoryGenerator::get_C1( const double& psi) { 
         yaw_e_ =psi; 
         return tan(psi); 
-        }
+    }
     double TrajectoryGenerator::get_C2(const double& c1, const double& sf, const double& y_offset){
         return -2*c1/sf+3*y_offset/(sf*sf);
     }
@@ -54,7 +54,8 @@ namespace Plan{
                 double c3 = get_C3(c1,c2,sf);
                 kappas.clear();
                 trajectory.clear();
-                get_trajectory(trajectory,kappas,c1,c2,c3,sf,v0);
+
+                get_trajectory(trajectory,kappas,c1,c2,c3,sf,v0, y_offset);
                 if(std::max(abs(*std::max_element(kappas.begin(), kappas.end())), 
                             abs(*std::min_element(kappas.begin(), kappas.end()))) <= max_kappa_){
                     // std::cout <<"sf " << sf<< "kappas "<<kappas[0]<<" "<<kappas[*std::max_element(kappas.begin(), kappas.end())]<<std::endl;
@@ -73,7 +74,8 @@ namespace Plan{
     }
     //트래젝토리 생성 >> 최대곡률 조건을 만족하는 트래젝토리를 반환
     void TrajectoryGenerator::get_trajectory(
-            std::vector<State>& trajectory,std::vector<double>& kappas, const double& c1, const double&c2, const double& c3, double sf, const double& v0){
+            std::vector<State>& trajectory,std::vector<double>& kappas, const double& c1, const double&c2, const double& c3, double sf, const double& v0,
+            const double& y_offset){
         std::vector<double> s;
         double s_gen = 0.0; 
         while(s_gen < sf){
@@ -91,7 +93,7 @@ namespace Plan{
         double vel_prev = 0;
         for(double s_current : s ){
             double dlds = get_dlds(c1,c2,c3,s_current);
-            double theta = atan(dlds);
+            double theta =  -atan(dlds);
             double ddlds = get_ddlds(c2,c3,s_current);
             double kappa = get_kappa(dlds,ddlds);
             kappas.push_back(kappa);
@@ -111,6 +113,11 @@ namespace Plan{
             state.x_ = vec[0];
             state.y_ = vec[1];
             state.k_ = kappa;
+            if(y_offset == 0.0){
+                theta = 0.0;
+                std::cout << "straight path yaw ==== " <<std::endl;
+                std::cout << ego_yaw_<<std::endl;
+            }
             state.yaw_ = ego_yaw_+theta;
             // std::cout << "x y "<<state.x_ <<" "<<state.y_<<std::endl
             if(abs(kappa) < 0.003 ){

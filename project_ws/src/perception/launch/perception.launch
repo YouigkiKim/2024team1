@@ -2,5 +2,6 @@
 
   <node pkg="perception" type="lidar_pre_node" name="lidar_pre_node" output="screen"/>
   <node pkg="perception" type="localization_node" name="localization_node" output="screen"/>
+  <node name="yolo_detector" pkg="perception" type="yolo.py" output="screen" launch-prefix="bash -c 'source ~/my_env/bin/activate && '"/>
 
 </launch>

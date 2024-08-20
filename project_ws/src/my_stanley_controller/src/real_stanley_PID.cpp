@@ -133,7 +133,7 @@ public:
 
             if (target_velocity_ == 0.0) {
                 control_cmd_.throttle = 0.0;
-                control_cmd_.brake = 0.0;
+                control_cmd_.brake = 1.0;
             }
         } 
         else {  // aeb_flag_가 1(true)일 때는 풀브레이크

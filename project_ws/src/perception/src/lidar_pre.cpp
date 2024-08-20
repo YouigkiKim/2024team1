@@ -170,7 +170,7 @@ void LidarPreprocessor::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& in
     if (cloud_out_PCL2_) {
         sensor_msgs::PointCloud2 output;
         pcl_conversions::fromPCL(*cloud_out_PCL2_, output);
-        output.header.frame_id = "hero/LIDAR";
+        output.header.frame_id = "hero/front";
         output.header.stamp = ros::Time::now();
         point_pub_.publish(output);
 
@@ -427,9 +427,9 @@ void LidarPreprocessor::processAndVisualizeBoundingBox(const std::vector<MyPoint
         std::stringstream ss;
         ss << "ID: " << cluster.cluster_id << "\n"
            << "x: " << predicted_x << "\n"
-           << "y: " << predicted_y << "\n"
-           << "vx: " << predicted_vx << "\n"
-           << "vy: " << predicted_vy;
+           << "y: " << predicted_y ;
+        //    << "vx: " << predicted_vx << "\n"
+        //    << "vy: " << predicted_vy;
 
         visualization_msgs::Marker text_marker;
         text_marker.header.frame_id = "map";  // Carla 좌표계로 변경
@@ -473,9 +473,9 @@ void LidarPreprocessor::processAndVisualizeBoundingBox(const std::vector<MyPoint
 
         object_msg.shape.type = shape_msgs::SolidPrimitive::BOX;
         object_msg.shape.dimensions.resize(3);
-        object_msg.shape.dimensions[shape_msgs::SolidPrimitive::BOX_X] = cluster.rectangle_points[1].first - cluster.rectangle_points[0].first;
-        object_msg.shape.dimensions[shape_msgs::SolidPrimitive::BOX_Y] = cluster.rectangle_points[2].second - cluster.rectangle_points[1].second;
-        object_msg.shape.dimensions[shape_msgs::SolidPrimitive::BOX_Z] = cluster.depth;
+        object_msg.shape.dimensions[shape_msgs::SolidPrimitive::BOX_X] = cluster.box_scale_x;
+        object_msg.shape.dimensions[shape_msgs::SolidPrimitive::BOX_Y] = cluster.box_scale_y;
+        object_msg.shape.dimensions[shape_msgs::SolidPrimitive::BOX_Z] = cluster.box_scale_z;
 
         for (const auto& point : cluster.rectangle_points) {
             geometry_msgs::Point32 polygon_point;
@@ -753,7 +753,7 @@ void LidarPreprocessor::broadcastCarlaTransform(const EgoState& ego) {
     geometry_msgs::TransformStamped front_transform;
     front_transform.header.stamp = ros::Time::now();
     front_transform.header.frame_id = "hero";
-    front_transform.child_frame_id = "hero/LIDAR";
+    front_transform.child_frame_id = "hero/front";
 
     front_transform.transform.translation.x = 0.0;
     front_transform.transform.translation.y = 0.0;
